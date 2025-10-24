@@ -1,0 +1,18 @@
+# .air.toml
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o tmp/main.exe ."   # pakai / bukan \ biar lintas platform
+  bin = "./tmp/main.exe"               # langsung jalankan binary, tanpa cmd.exe
+  include_ext = ["go", "tpl", "tmpl", "html"]
+  exclude_dir = ["vendor", "tmp"]
+  delay = 1000
+
+[log]
+  time = true
+
+[color]
+  main = "yellow"
+  watcher = "cyan"
+  build = "green"
