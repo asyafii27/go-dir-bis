@@ -14,7 +14,13 @@ func SetupRoutes(router *gin.Engine) {
 		{
 			regionGroup := master.Group("/region")
 			{
+				// privinces
 				regionGroup.GET("/provinces", regionController.GetProvinces)
+				regionGroup.GET("/provinces/:id", regionController.GetProvinceByID)
+
+				// cities
+				regionGroup.GET("cities", regionController.GetCities)
+				regionGroup.GET("cities/:id", regionController.GetCityByID)
 			}
 		}
 

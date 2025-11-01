@@ -65,3 +65,19 @@ func PaginateData(c *gin.Context, db *gorm.DB, result interface{}) (helpers.Pagi
 	}
 	return meta, nil
 }
+
+func GetProvinceByID(c *gin.Context) {
+	id := c.Param("id")
+	var province region.Province
+
+	if err := config.Database.First(&province, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			helpers.ErrorResponse(c, http.StatusNotFound, "Province not found")
+		} else {
+			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		}
+		return
+	}
+
+	helpers.SuccessResponse(c, http.StatusOK, "success", province)
+}
