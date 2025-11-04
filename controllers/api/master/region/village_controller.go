@@ -11,28 +11,28 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetCities(c *gin.Context) {
-	var cities []region.City
+func GetVillages(c *gin.Context) {
+	var villages []region.Village
+
 	db := config.Database
 
-	db = AppyCityFilters(c, db)
-
-	meta, err := PaginateData(c, db, &cities)
+	db = ApplyVillageFilters(c, db)
+	meta, err := PaginateData(c, db, &villages)
 	if err != nil {
 		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	helpers.SuccessResponse(c, http.StatusOK, "Success", cities, meta)
+	helpers.SuccessResponse(c, http.StatusOK, "Success", villages, meta)
 }
 
-func AppyCityFilters(c *gin.Context, db *gorm.DB) *gorm.DB {
+func ApplyVillageFilters(c *gin.Context, db *gorm.DB) *gorm.DB {
 	if code := c.Query("code"); code != "" {
 		db = db.Where("code = ?", code)
 	}
 
-	if province_code := c.Query("province_code"); province_code != "" {
-		db = db.Where("province_code = ?", province_code)
+	if village_code := c.Query("village_code"); village_code != "" {
+		db = db.Where("village_code = ?", village_code)
 	}
 
 	if name := c.Query("name"); name != "" {
@@ -43,11 +43,12 @@ func AppyCityFilters(c *gin.Context, db *gorm.DB) *gorm.DB {
 	sortDir := strings.ToLower(c.DefaultQuery("sort_dir", "desc"))
 
 	allowedSorts := map[string]bool{
-		"id":         true,
-		"code":       true,
-		"name":       true,
-		"created_at": true,
-		"updated_at": true,
+		"id":           true,
+		"code":         true,
+		"village_code": true,
+		"name":         true,
+		"created_at":   true,
+		"updated_at":   true,
 	}
 
 	if !allowedSorts[sortBy] {
@@ -61,13 +62,13 @@ func AppyCityFilters(c *gin.Context, db *gorm.DB) *gorm.DB {
 	return db.Order(sortBy + " " + sortDir)
 }
 
-func GetCityByID(c *gin.Context) {
+func GetVillageByID(c *gin.Context) {
 	id := c.Param("id")
-	var city region.City
+	var village region.Village
 
-	if err := config.Database.First(&city, id).Error; err != nil {
+	if err := config.Database.First(&village, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			helpers.ErrorResponse(c, http.StatusNotFound, "Data tidak ditemukan")
+			helpers.ErrorResponse(c, http.StatusNotFound, "VIllage not found")
 		} else {
 			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
 		}
@@ -75,5 +76,5 @@ func GetCityByID(c *gin.Context) {
 		return
 	}
 
-	helpers.SuccessResponse(c, http.StatusOK, "Success", city)
+	helpers.SuccessResponse(c, http.StatusOK, "Success", village)
 }

@@ -4,12 +4,16 @@ import (
 	"net/http"
 	"strings"
 
+	"mobile-directory-bussines/config"
+	"mobile-directory-bussines/helpers"
+	"mobile-directory-bussines/models/master/region"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 func GetDistricts(c *gin.Context) {
-	var districts []region.Distirct
+	var districts []region.District
 
 	db := config.Database
 
@@ -41,12 +45,12 @@ func ApplyDistrictFilters(c *gin.Context, db *gorm.DB) *gorm.DB {
 	sortDir := strings.ToLower(c.DefaultQuery("sort_dir", "desc"))
 
 	allowedSorts := map[string]bool{
-		"id": true,
-		"code": true,
-		"city_code": true,
-		"name": true,
+		"id":         true,
+		"code":       true,
+		"city_code":  true,
+		"name":       true,
 		"created_at": true,
-		"updated_at": true
+		"updated_at": true,
 	}
 
 	if !allowedSorts[sortBy] {
@@ -54,15 +58,25 @@ func ApplyDistrictFilters(c *gin.Context, db *gorm.DB) *gorm.DB {
 	}
 
 	if sortDir != "asc" && sortDir != "desc" {
-		sortDir "desc"
+		sortDir = "desc"
 	}
 
-	return db.Order(sortBy  + " " + sortDir)
+	return db.Order(sortBy + " " + sortDir)
 }
 
-func GetDistrictByID (c *gin.Context) {
+func GetDistrictByID(c *gin.Context) {
 	id := c.Param("id")
 	var district region.District
 
-	if err := config.Database.First(&district)
+	if err := config.Database.First(&district, id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			helpers.ErrorResponse(c, http.StatusNotFound, "District not found")
+		} else {
+			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		}
+
+		return
+	}
+
+	helpers.SuccessResponse(c, http.StatusOK, "Success", district)
 }
