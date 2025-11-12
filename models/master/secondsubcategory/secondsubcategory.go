@@ -8,8 +8,8 @@ import (
 
 type SecondSubCategory struct {
 	ID            uint64     `gorm:"primaryKey:autoIncrement" json:"id"`
-	CategoryId    uint64     `gorm:"not null;index" json:"category_id"`
-	SubCategoryId uint64     `gorm:"not null;index" json:"sub_category_id"`
+	CategoryID    uint64     `gorm:"not null;index" json:"category_id"`
+	SubCategoryID uint64     `gorm:"not null;index" json:"sub_category_id"`
 	Code          string     `gorm:"type:varchar(50);not null;unique" json:"code"`
 	Name          string     `gorm:"type:varchar(50);not null;unique" json:"name"`
 	StatusTxt     string     `gorm:"type:varchar(20);default:'active';not null" json:"status_txt"`
@@ -17,8 +17,8 @@ type SecondSubCategory struct {
 	CreatedAt     *time.Time `json:"created_at,omitempty"`
 	UpdatedAt     *time.Time `json:"updated_at,omitempty"`
 
-	Category    category.Category       `gorm:"foreignKey:CategoryId:references:ID" json:"category"`
-	SubCategory subcategory.SubCategory `gorm:"foreignKey:SubCategoryId;references:ID" json:"subcategory"`
+	Category    *category.Category       `json:"category" gorm:"foreignKey:CategoryID;references:ID"`
+	SubCategory *subcategory.SubCategory `json:"subcategory" gorm:"foreignKey:SubCategoryID;references:ID"`
 }
 
 func (SecondSubCategory) TableName() string {

@@ -2,7 +2,7 @@ package helpers
 
 import "github.com/gin-gonic/gin"
 
-func ErrorResponse(c *gin.Context, code int, message string) {
+func ErrorResponse(c *gin.Context, code int, message interface{}) {
 	c.JSON(code, gin.H{
 		"status":  code,
 		"message": message,
