@@ -15,7 +15,7 @@ func ConnectDatabase() {
 	var databasePassword = ""
 	var databaseHost = "127.0.0.1"
 	var databasePort = "3306"
-	var databaseName = "directory-bussines"
+	var databaseName = "directory_business"
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		databaseUser, databasePassword, databaseHost, databasePort, databaseName)

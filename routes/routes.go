@@ -5,6 +5,7 @@ import (
 	regionController "mobile-directory-bussines/controllers/api/master/region"
 	secondSubCategoryController "mobile-directory-bussines/controllers/api/master/secondsubcategory"
 	subCategoryController "mobile-directory-bussines/controllers/api/master/subcategory"
+	partnerController "mobile-directory-bussines/controllers/api/partner"
 	partnerOwnerController "mobile-directory-bussines/controllers/api/partnerowner"
 	userController "mobile-directory-bussines/controllers/api/user"
 
@@ -45,10 +46,17 @@ func SetupRoutes(router *gin.Engine) {
 			master.GET("/secondsubcategories/:id", secondSubCategoryController.GetSecondSubCategoryByID)
 		}
 
+		// partner owners
 		partnerOwner := api.Group("/partner-owner")
 		{
 			partnerOwner.GET("/partner-owners", partnerOwnerController.GetPartnerOwners)
 			partnerOwner.GET("/partner-owners/:id", partnerOwnerController.GetPartnerOwnerByID)
+		}
+
+		// partners
+		partner := api.Group("/partner")
+		{
+			partner.GET("/partners", partnerController.GetPartners)
 		}
 
 		mobile := api.Group("/mobile")
