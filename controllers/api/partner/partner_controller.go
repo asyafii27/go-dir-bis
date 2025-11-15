@@ -1,6 +1,7 @@
 package partner
 
 import (
+	"database/sql"
 	"mobile-directory-bussines/config"
 	"mobile-directory-bussines/helpers"
 	"mobile-directory-bussines/models/partner"
@@ -86,6 +87,30 @@ func ApplyPartnerFilters(c *gin.Context, db *gorm.DB) *gorm.DB {
 	if verificationTxt := c.Query("verification_seller_status_txt"); verificationTxt != "" {
 		statuses := strings.Split(verificationTxt, ",")
 		db = db.Where("verification_seller_status_txt IN ?", statuses)
+	}
+
+	if globalSearch := c.Query("global_search"); globalSearch != "" {
+		like := "%" + globalSearch + "%"
+
+		db = db.Joins("LEFT JOIN partner_owners AS po ON po.id = partners.partner_owner_id").
+			Where(`
+            (
+                partners.code LIKE @like
+                OR partners.name LIKE @like
+                OR partners.email LIKE @like
+                OR partners.mobile_no LIKE @like
+                OR po.name LIKE @like
+            )
+        `, sql.Named("like", like))
+	}
+
+	if bestGroupId := c.Query("best_group_id"); bestGroupId != "" {
+		explodeBestGroupId := strings.Split(bestGroupId, ",")
+		db = db.Where("best_group_id = ?", explodeBestGroupId)
+	}
+
+	if paymentMethod := c.Query("payment_method"); paymentMethod != "" {
+		db = db.Where("payment_method = ?", paymentMethod)
 	}
 
 	sortBy := c.DefaultQuery("sort_by", "created_at")
