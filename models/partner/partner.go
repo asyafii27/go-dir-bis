@@ -3,6 +3,7 @@ package partner
 import (
 	"time"
 
+	"mobile-directory-bussines/models/master/bestgroup"
 	"mobile-directory-bussines/models/master/category"
 	"mobile-directory-bussines/models/master/region"
 	"mobile-directory-bussines/models/master/secondsubcategory"
@@ -51,22 +52,30 @@ type Partner struct {
 	TiktokSosmed                string     `json:"tiktok_sosmed"`
 	PhoneNo                     string     `json:"phone_no"`
 	StoreDescription            string     `json:"store_description"`
-	BusinessType                string     `json:"bussines_type"`
-	NIK                         string     `json:"nik"`
-	NPWP                        string     `json:"npwp"`
+	BussinesType                string     `json:"bussines_type"`
 	CreatedAt                   time.Time  `json:"created_at"`
 	UpdatedAt                   time.Time  `json:"updated_at"`
 
-	// RELATIONS
-	PartnerOwner *partnerowner.PartnerOwner `gorm:"foreignKey:PartnerOwnerID" json:"partner_owner,omitempty"`
-	Province     *region.Province           `gorm:"foreignKey:ProvinceCode;references:Code" json:"province,omitempty"`
-	City         *region.City               `gorm:"foreignKey:CityCode;references:Code" json:"city,omitempty"`
-	District     *region.District           `gorm:"foreignKey:DistrictCode;references:Code" json:"district,omitempty"`
-	Village      *region.Village            `gorm:"foreignKey:VillageCode;references:Code" json:"village,omitempty"`
+	PartnerOwner *partnerowner.PartnerOwner `gorm:"foreignKey:PartnerOwnerID" json:"partner_owner"`
+	Province     *region.Province           `gorm:"foreignKey:ProvinceCode;references:Code" json:"province"`
+	City         *region.City               `gorm:"foreignKey:CityCode;references:Code" json:"city"`
+	District     *region.District           `gorm:"foreignKey:DistrictCode;references:Code" json:"district"`
+	Village      *region.Village            `gorm:"foreignKey:VillageCode;references:Code" json:"village"`
 
-	Categories          []*category.Category                   `gorm:"many2many:partners_categories;foreignKey:ID;joinForeignKey:PartnerID;References:ID;joinReferences:CategoryID" json:"categories,omitempty"`
-	SubCategories       []*subcategory.SubCategory             `gorm:"many2many:partners_sub_categories;foreignKey:ID;joinForeignKey:PartnerID;References:ID;joinReferences:SubCategoryID" json:"sub_categories,omitempty"`
-	SecondSubCategories []*secondsubcategory.SecondSubCategory `gorm:"many2many:partners_second_sub_categories;foreignKey:ID;joinForeignKey:PartnerID;References:ID;joinReferences:SecondSubCategoryID" json:"second_sub_categories,omitempty"`
+	Categories          []*category.Category                   `gorm:"many2many:partners_categories;foreignKey:ID;joinForeignKey:PartnerID;References:ID;joinReferences:CategoryID" json:"categories"`
+	SubCategories       []*subcategory.SubCategory             `gorm:"many2many:partners_sub_categories;foreignKey:ID;joinForeignKey:PartnerID;References:ID;joinReferences:SubCategoryID" json:"sub_categories"`
+	SecondSubCategories []*secondsubcategory.SecondSubCategory `gorm:"many2many:partners_second_sub_categories;foreignKey:ID;joinForeignKey:PartnerID;References:ID;joinReferences:SecondSubCategoryID" json:"second_sub_categories"`
+
+	BestGroup                           *bestgroup.BestGroup                  `gorm:"foreignKey:BestGroupID" json:"best_group"`
+	HistoryPreferedPartnerVerifications []*HistoryPreferedPartnerVerification `gorm:"foreignKey:PartnerID;references:ID" json:"history_prefered_partner_verifications"`
+
+	PartnerScheduleMonday    *PartnerSchedule `gorm:"foreignKey:PartnerID;references:ID;where:day_of_week = '1'" json:"partner_schedule_monday"`
+	PartnerScheduleTuesday   *PartnerSchedule `gorm:"foreignKey:PartnerID;references:ID;where:day_of_week = '2'" json:"partner_schedule_tuesday"`
+	PartnerScheduleWednesday *PartnerSchedule `gorm:"foreignKey:PartnerID;references:ID;where:day_of_week = '3'" json:"partner_schedule_wednesday"`
+	PartnerScheduleThursday  *PartnerSchedule `gorm:"foreignKey:PartnerID;references:ID;where:day_of_week = '4'" json:"partner_schedule_thursday"`
+	PartnerScheduleFriday    *PartnerSchedule `gorm:"foreignKey:PartnerID;references:ID;where:day_of_week = '5'" json:"partner_schedule_friday"`
+	PartnerScheduleSaturday  *PartnerSchedule `gorm:"foreignKey:PartnerID;references:ID;where:day_of_week = '6'" json:"partner_schedule_saturday"`
+	PartnerScheduleSunday    *PartnerSchedule `gorm:"foreignKey:PartnerID;references:ID;where:day_of_week = '7'" json:"partner_schedule_sunday"`
 }
 
 // Auto generate UUID before create

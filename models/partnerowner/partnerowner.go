@@ -8,6 +8,8 @@ import (
 type PartnerOwner struct {
 	ID           uint64     `json:"id" gorm:"primaryKey;autoIncrement"`
 	Code         string     `json:"code" gorm:"size:50;unique;not null"`
+	NIK          string     `json:"nik"`
+	NPWP         string     `json:"npwp"`
 	Name         string     `json:"name" gorm:"size:100;not null"`
 	Email        *string    `json:"email" gorm:"size:255;unique"`
 	MobileNo     string     `json:"mobile_no" gorm:"size:15;not null"`

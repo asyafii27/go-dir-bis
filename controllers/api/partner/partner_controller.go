@@ -17,7 +17,7 @@ func GetPartners(c *gin.Context) {
 
 	db := config.Database
 
-	db = db.Preload("Categories").Preload("SubCategories").Preload("SecondSubCategories")
+	db = PartnerRelations(c, db)
 
 	db = ApplyPartnerFilters(c, db)
 
@@ -40,6 +40,28 @@ func GetPartners(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, partners)
+}
+
+func PartnerRelations(c *gin.Context, db *gorm.DB) *gorm.DB {
+	db = db.Preload("Categories").
+		Preload("SubCategories").
+		Preload("SecondSubCategories").
+		Preload("Province").
+		Preload("City").
+		Preload("District").
+		Preload("Village").
+		Preload("PartnerOwner").
+		Preload("BestGroup").
+		Preload("PartnerScheduleMonday").
+		Preload("PartnerScheduleTuesday").
+		Preload("PartnerScheduleWednesday").
+		Preload("PartnerScheduleThursday").
+		Preload("PartnerScheduleFriday").
+		Preload("PartnerScheduleSaturday").
+		Preload("PartnerScheduleSunday").
+		Preload("HistoryPreferedPartnerVerifications")
+
+	return db
 }
 
 func ApplyPartnerFilters(c *gin.Context, db *gorm.DB) *gorm.DB {
