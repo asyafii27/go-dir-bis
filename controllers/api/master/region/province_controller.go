@@ -20,7 +20,7 @@ func GetProvinces(c *gin.Context) {
 
 	meta, err := PaginateData(c, db, &provinces)
 	if err != nil {
-		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data provinsi", err)
 		return
 	}
 
@@ -72,9 +72,9 @@ func GetProvinceByID(c *gin.Context) {
 
 	if err := config.Database.First(&province, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			helpers.ErrorResponse(c, http.StatusNotFound, "Province not found")
+			helpers.ErrorResponse(c, http.StatusNotFound, "Province not found", err)
 		} else {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, "Province not found", err)
 		}
 		return
 	}

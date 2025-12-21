@@ -25,7 +25,7 @@ func GetSubCategories(c *gin.Context) {
 	if page != "" {
 		meta, err := helpers.LaravelPaginate(c, db, &subcategories)
 		if err != nil {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data subkategori", err)
 			return
 		}
 
@@ -34,7 +34,7 @@ func GetSubCategories(c *gin.Context) {
 	}
 
 	if err := db.Find(&subcategories).Error; err != nil {
-		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data subkategori", err)
 		return
 	}
 
@@ -81,9 +81,9 @@ func GetSubCategoryByID(c *gin.Context) {
 
 	if err := db.First(&subcategory, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			helpers.ErrorResponse(c, http.StatusNotFound, "Subcategory tidak ditemukan")
+			helpers.ErrorResponse(c, http.StatusNotFound, "Subcategory tidak ditemukan", err)
 		} else {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error(), err)
 		}
 		return
 	}

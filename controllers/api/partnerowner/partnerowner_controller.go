@@ -24,7 +24,7 @@ func GetPartnerOwners(c *gin.Context) {
 	if page != "" {
 		meta, err := helpers.LaravelPaginate(c, db, &partnerowners)
 		if err != nil {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data partner owner", err)
 			return
 		}
 
@@ -33,7 +33,7 @@ func GetPartnerOwners(c *gin.Context) {
 	}
 
 	if err := db.Find(&partnerowners).Error; err != nil {
-		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data partner owner", err)
 		return
 	}
 
@@ -89,9 +89,9 @@ func GetPartnerOwnerByID(c *gin.Context) {
 
 	if err := db.First(&partnerowner, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			helpers.ErrorResponse(c, http.StatusNotFound, "Data pemilik tidak ditemukan")
+			helpers.ErrorResponse(c, http.StatusNotFound, "Data pemilik tidak ditemukan", nil)
 		} else {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data partner owner", err)
 		}
 
 		return

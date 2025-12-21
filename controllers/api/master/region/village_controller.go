@@ -19,7 +19,7 @@ func GetVillages(c *gin.Context) {
 	db = ApplyVillageFilters(c, db)
 	meta, err := PaginateData(c, db, &villages)
 	if err != nil {
-		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
@@ -68,9 +68,9 @@ func GetVillageByID(c *gin.Context) {
 
 	if err := config.Database.First(&village, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			helpers.ErrorResponse(c, http.StatusNotFound, "VIllage not found")
+			helpers.ErrorResponse(c, http.StatusNotFound, "VIllage not found", err)
 		} else {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error(), err)
 		}
 
 		return

@@ -24,7 +24,7 @@ func GetCategories(c *gin.Context) {
 	if page != "" {
 		meta, err := helpers.LaravelPaginate(c, db, &categories)
 		if err != nil {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data kategori", err)
 			return
 		}
 
@@ -33,7 +33,7 @@ func GetCategories(c *gin.Context) {
 	}
 
 	if err := db.Find(&categories).Error; err != nil {
-		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data kategori", err)
 		return
 	}
 
@@ -70,9 +70,9 @@ func GetCategoryByID(c *gin.Context) {
 
 	if err := config.Database.First(&category, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			helpers.ErrorResponse(c, http.StatusNotFound, "Category tidak ditemukan")
+			helpers.ErrorResponse(c, http.StatusNotFound, "Category tidak ditemukan", err)
 		} else {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error(), err)
 		}
 
 		return
@@ -111,7 +111,7 @@ func StoreCategory(c *gin.Context) {
 
 	tx := db.Begin()
 	if tx.Error != nil {
-		helpers.ErrorResponse(c, http.StatusInternalServerError, tx.Error.Error())
+		helpers.ErrorResponse(c, http.StatusInternalServerError, tx.Error.Error(), tx.Error)
 		return
 	}
 
@@ -119,14 +119,14 @@ func StoreCategory(c *gin.Context) {
 		if r := recover(); r != nil {
 			tx.Rollback()
 			log.Printf("terjadi panic saat menambahkan category: %v", r)
-			helpers.ErrorResponse(c, http.StatusInternalServerError, "Terjadi kesalahan internal")
+			helpers.ErrorResponse(c, http.StatusInternalServerError, "Terjadi kesalahan internal", tx.Error)
 		}
 	}()
 
 	rollbackWithError := func(err error) {
 		tx.Rollback()
 		log.Printf("gagal menambahkan data category: %v", err)
-		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal menambahkan data: "+err.Error())
+		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal menambahkan data: "+err.Error(), tx.Error)
 	}
 
 	code := generateCategoryCode()

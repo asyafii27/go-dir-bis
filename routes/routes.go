@@ -1,6 +1,7 @@
 package routes
 
 import (
+	chatRoomController "mobile-directory-bussines/controllers/api/chat"
 	categoryController "mobile-directory-bussines/controllers/api/master/category"
 	regionController "mobile-directory-bussines/controllers/api/master/region"
 	secondSubCategoryController "mobile-directory-bussines/controllers/api/master/secondsubcategory"
@@ -8,12 +9,14 @@ import (
 	partnerController "mobile-directory-bussines/controllers/api/partner"
 	partnerOwnerController "mobile-directory-bussines/controllers/api/partnerowner"
 	userController "mobile-directory-bussines/controllers/api/user"
+	"mobile-directory-bussines/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func SetupRoutes(router *gin.Engine) {
 	api := router.Group("/api")
+	api.Use(middleware.JWTAuthMiddleware())
 	{
 		master := api.Group("/master")
 		{
@@ -65,6 +68,12 @@ func SetupRoutes(router *gin.Engine) {
 			mobile.GET("/users/:id", userController.GetUserByID)
 			mobile.POST("/users", userController.StoreUser)
 			mobile.PUT("/users/:id", userController.UpdateUser)
+		}
+
+		//chat
+		chat := api.Group("/chat")
+		{
+			chat.POST("/chat-rooms", chatRoomController.StorePrivateMessage)
 		}
 	}
 }

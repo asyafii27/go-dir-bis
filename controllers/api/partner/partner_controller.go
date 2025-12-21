@@ -26,7 +26,7 @@ func GetPartners(c *gin.Context) {
 	if page != "" {
 		meta, err := helpers.LaravelPaginate(c, db, &partners)
 		if err != nil {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data partner", err)
 			return
 		}
 
@@ -35,7 +35,7 @@ func GetPartners(c *gin.Context) {
 	}
 
 	if err := db.Find(&partners).Error; err != nil {
-		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data partner", err)
 		return
 	}
 

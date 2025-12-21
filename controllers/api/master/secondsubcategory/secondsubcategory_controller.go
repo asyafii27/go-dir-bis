@@ -25,7 +25,7 @@ func GetSecondSubCategories(c *gin.Context) {
 	if page != "" {
 		meta, err := helpers.LaravelPaginate(c, db, &secondsubcategories)
 		if err != nil {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data second subcategory", err)
 			return
 		}
 
@@ -34,7 +34,7 @@ func GetSecondSubCategories(c *gin.Context) {
 	}
 
 	if err := db.Find(&secondsubcategories).Error; err != nil {
-		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengambil data second subcategory", err)
 		return
 	}
 
@@ -85,9 +85,9 @@ func GetSecondSubCategoryByID(c *gin.Context) {
 
 	if err := db.First(&secondsubcategory, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			helpers.ErrorResponse(c, http.StatusNotFound, "Second sub Category tidak ditemukan")
+			helpers.ErrorResponse(c, http.StatusNotFound, "Second sub Category tidak ditemukan", err)
 		} else {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error(), err)
 		}
 
 		return

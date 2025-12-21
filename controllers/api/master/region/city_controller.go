@@ -19,7 +19,7 @@ func GetCities(c *gin.Context) {
 
 	meta, err := PaginateData(c, db, &cities)
 	if err != nil {
-		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
@@ -67,9 +67,9 @@ func GetCityByID(c *gin.Context) {
 
 	if err := config.Database.First(&city, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			helpers.ErrorResponse(c, http.StatusNotFound, "Data tidak ditemukan")
+			helpers.ErrorResponse(c, http.StatusNotFound, "Data tidak ditemukan", err)
 		} else {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error(), err)
 		}
 
 		return

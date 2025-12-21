@@ -115,7 +115,7 @@ func StoreUser(c *gin.Context) {
 	}
 
 	if err := config.Database.Create(&user).Error; err != nil {
-		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal membuat user")
+		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal membuat user", err)
 		return
 	}
 
@@ -135,19 +135,19 @@ func validateCreateUserInput(c *gin.Context, input *struct {
 	}
 
 	if input.Password != input.PasswordConfirmation || !validPassword(input.Password) {
-		helpers.ErrorResponse(c, http.StatusBadRequest, "Password harus minimal 8 karakter, mengandung huruf besar, kecil, angka, dan sesuai konfirmasi")
+		helpers.ErrorResponse(c, http.StatusBadRequest, "Password harus minimal 8 karakter, mengandung huruf besar, kecil, angka, dan sesuai konfirmasi", nil)
 		return false
 	}
 
 	var existingUser models.User
 	if err := config.Database.Where("email = ?", input.Email).First(&existingUser).Error; err == nil {
-		helpers.ErrorResponse(c, http.StatusBadRequest, "Email sudah digunakan")
+		helpers.ErrorResponse(c, http.StatusBadRequest, "Email sudah digunakan", nil)
 		return false
 	}
 
 	var role role.Role
 	if err := config.Database.First(&role, input.RoleID).Error; err != nil {
-		helpers.ErrorResponse(c, http.StatusBadRequest, "Role tidak ditemukan")
+		helpers.ErrorResponse(c, http.StatusBadRequest, "Role tidak ditemukan", err)
 		return false
 	}
 
@@ -159,7 +159,7 @@ func UpdateUser(c *gin.Context) {
 
 	var user models.User
 	if err := config.Database.First(&user, id).Error; err != nil {
-		helpers.ErrorResponse(c, http.StatusNotFound, "User tidak ditemukan")
+		helpers.ErrorResponse(c, http.StatusNotFound, "User tidak ditemukan", err)
 		return
 	}
 
@@ -185,7 +185,7 @@ func UpdateUser(c *gin.Context) {
 	user.RoleID = input.RoleID
 
 	if err := config.Database.Save(&user).Error; err != nil {
-		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengupdate user")
+		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengupdate user", err)
 		return
 	}
 
@@ -206,20 +206,20 @@ func validateUpdateUserInput(c *gin.Context, input *struct {
 
 	if input.Password != "" {
 		if input.Password != input.PasswordConfirmation || !validPassword(input.Password) {
-			helpers.ErrorResponse(c, http.StatusBadRequest, "Password harus minimal 8 karakter, mengandung huruf besar, kecil, angka, dan sesuai konfirmasi")
+			helpers.ErrorResponse(c, http.StatusBadRequest, "Password harus minimal 8 karakter, mengandung huruf besar, kecil, angka, dan sesuai konfirmasi", nil)
 			return false
 		}
 	}
 
 	var existingUser models.User
 	if err := config.Database.Where("email = ? AND id != ?", input.Email, userID).First(&existingUser).Error; err == nil {
-		helpers.ErrorResponse(c, http.StatusBadRequest, "Email sudah digunakan oleh user lain")
+		helpers.ErrorResponse(c, http.StatusBadRequest, "Email sudah digunakan oleh user lain", nil)
 		return false
 	}
 
 	var role role.Role
 	if err := config.Database.First(&role, input.RoleID).Error; err != nil {
-		helpers.ErrorResponse(c, http.StatusBadRequest, "Role tidak ditemukan")
+		helpers.ErrorResponse(c, http.StatusBadRequest, "Role tidak ditemukan", nil)
 		return false
 	}
 

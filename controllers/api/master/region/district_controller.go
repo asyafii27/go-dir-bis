@@ -21,7 +21,7 @@ func GetDistricts(c *gin.Context) {
 
 	meta, err := PaginateData(c, db, &districts)
 	if err != nil {
-		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+		helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error(), err)
 		return
 	}
 
@@ -70,9 +70,9 @@ func GetDistrictByID(c *gin.Context) {
 
 	if err := config.Database.First(&district, id).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			helpers.ErrorResponse(c, http.StatusNotFound, "District not found")
+			helpers.ErrorResponse(c, http.StatusNotFound, "District not found", err)
 		} else {
-			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error())
+			helpers.ErrorResponse(c, http.StatusInternalServerError, err.Error(), err)
 		}
 
 		return
