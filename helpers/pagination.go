@@ -3,6 +3,9 @@ package helpers
 import (
 	"math"
 	"strconv"
+	"strings"
+
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -165,4 +168,78 @@ func derefStr(s *string) string {
 		return ""
 	}
 	return *s
+}
+
+func GeneralSortData(
+	db *gorm.DB,
+	sortBy string,
+	sortDir string,
+	validFields []string,
+) *gorm.DB {
+
+	if sortBy != "" && sortDir != "" {
+
+		if len(validFields) > 0 {
+			if !contains(validFields, sortBy) {
+				return db
+			}
+		}
+
+		dir := strings.ToLower(sortDir)
+		if dir != "asc" && dir != "desc" {
+			dir = "asc"
+		}
+
+		db = db.Order(sortBy + " " + dir)
+	}
+
+	return db
+}
+
+func contains(arr []string, value string) bool {
+	for _, v := range arr {
+		if v == value {
+			return true
+		}
+	}
+	return false
+}
+
+func RespondWithPagination(
+	c *gin.Context,
+	db *gorm.DB,
+	data interface{},
+	errorMessage string,
+) {
+	page := c.Query("page")
+
+	if page != "" {
+		meta, err := LaravelPaginate(c, db, data)
+		if err != nil {
+			ErrorResponse(c, http.StatusInternalServerError, errorMessage, err)
+			return
+		}
+
+		c.JSON(http.StatusOK, meta)
+		return
+	}
+
+	if err := db.Find(data).Error; err != nil {
+		ErrorResponse(c, http.StatusInternalServerError, errorMessage, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, data)
+}
+
+func ApplyPreloads(db *gorm.DB, preloads []string) *gorm.DB {
+	if len(preloads) == 0 {
+		return db
+	}
+
+	for _, preload := range preloads {
+		db = db.Preload(preload)
+	}
+
+	return db
 }

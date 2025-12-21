@@ -13,6 +13,53 @@ import (
 	"gorm.io/gorm"
 )
 
+func GetChatRooms(c *gin.Context) {
+	var chatRooms []chat.ChatRoom
+
+	db := config.Database
+
+	db = ApplyChatRoomFilter(c, db)
+
+	db = helpers.GeneralSortData(db, c.Query("sort_by"), c.Query("sort_dir"), validSortData())
+
+	db = helpers.ApplyPreloads(db, validPreload())
+
+	helpers.RespondWithPagination(c, db, &chatRooms, "Gagal mengambil data chat rooms")
+}
+
+func validSortData() []string {
+	return []string{
+		"created_at",
+		"updated_at",
+		"name",
+		"type",
+	}
+}
+
+func validPreload() []string {
+	return []string{}
+}
+
+func ApplyChatRoomFilter(c *gin.Context, db *gorm.DB) *gorm.DB {
+	if t := c.Query("type"); t != "" {
+		db = db.Where("type = ?", t)
+	}
+
+	if name := c.Query("name"); name != "" {
+		db = db.Where("name LIKE ?", "%"+name+"%")
+	}
+
+	if startCreatedAt := c.Query("created_at"); startCreatedAt != "" {
+		db = db.Where("created_at >= ?", startCreatedAt)
+	}
+
+	if finishCreatedAt := c.Query("created_at"); finishCreatedAt != "" {
+		db = db.Where("created_at <= ?", finishCreatedAt)
+	}
+
+	return db
+}
+
 type PrivateMessageRequest struct {
 	TargetUserID uint64 `json:"target_user_id" binding:"required"`
 	Message      string `json:"message" binding:"required"`
@@ -36,6 +83,7 @@ func StorePrivateMessage(c *gin.Context) {
 	}
 
 	var existingRoom chat.ChatRoom
+
 	subQuery := db.Model(&chat.ChatRoomUser{}).
 		Select("chat_room_id").
 		Where("user_id IN (?, ?)", currentUserID, req.TargetUserID).

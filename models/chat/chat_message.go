@@ -19,8 +19,8 @@ type ChatMessage struct {
 	UpdatedAt  time.Time      `json:"updated_at"`
 	DeletedAt  gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 
-	ChatRoom ChatRoom    `gorm:"foreignKey:ChatRoomID" json:"chat_room,omitempty"`
-	Sender   models.User `gorm:"foreignKey:SenderID" json:"sender,omitempty"`
+	ChatRoom *ChatRoom    `gorm:"foreignKey:ChatRoomID" json:"chat_room,omitempty"`
+	Sender   *models.User `gorm:"foreignKey:SenderID" json:"sender,omitempty"`
 }
 
 func (ChatMessage) TableName() string {
