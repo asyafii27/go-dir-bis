@@ -15,6 +15,8 @@ type ChatMessage struct {
 	Type       string         `gorm:"type:enum('text','image','file','system');default:'text'" json:"type"`
 	Message    *string        `gorm:"type:text" json:"message"`
 	FileURL    *string        `gorm:"type:varchar(500)" json:"file_url"`
+	Status     string         `gorm:"type:enum('sent','delivered','edited');default:'sent'" json:"status"`
+	EditedAt   *time.Time     `json:"edited_at"`
 	CreatedAt  time.Time      `json:"created_at"`
 	UpdatedAt  time.Time      `json:"updated_at"`
 	DeletedAt  gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`

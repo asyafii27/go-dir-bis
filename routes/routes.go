@@ -78,6 +78,9 @@ func SetupRoutes(router *gin.Engine) {
 			// chat rooms
 			chat.GET("/chat-rooms", chatRoomController.GetChatRooms)
 			chat.POST("/chat-rooms", chatRoomController.StorePrivateMessage)
+			chat.POST("/group-rooms", chatRoomController.CreateGroupRoom)
+			chat.POST("/group-rooms/members", chatRoomController.AddMemberToGroup)
+			chat.POST("/group-rooms/messages", chatRoomController.SendGroupMessage)
 
 			// chat messages
 			chat.GET("/chat-messages", chatMessageController.GetMessages)

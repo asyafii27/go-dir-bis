@@ -12,6 +12,7 @@ func Migrate() {
 		&chat.ChatRoom{},
 		&chat.ChatRoomUser{},
 		&chat.ChatMessage{},
+		&chat.ChatMessageReceipt{},
 		&chat.ChatMessageRead{},
 		&chat.ChatMessageDelete{},
 		&chat.ChatAttachment{},

@@ -126,9 +126,16 @@ func StorePrivateMessage(c *gin.Context) {
 		SenderID:   currentUserID,
 		Type:       "text",
 		Message:    &req.Message,
+		Status:     "sent",
 	}
 	if err := db.Create(&message).Error; err != nil {
 		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengirim pesan. Silakan hubungi administrator", err)
+		return
+	}
+
+	// Catat delivered untuk semua member room selain pengirim
+	if err := createReceiptsForRoom(db, room.ID, message.ID, currentUserID); err != nil {
+		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mencatat status delivered", err)
 		return
 	}
 
