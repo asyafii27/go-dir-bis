@@ -19,7 +19,6 @@ type CreateGroupRequest struct {
 	MemberIDs []uint64 `json:"member_ids" binding:"required,min=1"`
 }
 
-// CreateGroupRoom - Membuat grup chat baru
 func CreateGroupRoom(c *gin.Context) {
 	var req CreateGroupRequest
 
@@ -30,13 +29,11 @@ func CreateGroupRoom(c *gin.Context) {
 		return
 	}
 
-	// Validasi nama grup
 	if len(req.Name) < 3 {
 		helpers.ErrorResponse(c, http.StatusBadRequest, "Nama grup minimal 3 karakter", nil)
 		return
 	}
 
-	// Get current user ID
 	userIDStr := c.GetString("user_id")
 	currentUserID, err := strconv.ParseUint(userIDStr, 10, 64)
 	if err != nil {
@@ -44,7 +41,6 @@ func CreateGroupRoom(c *gin.Context) {
 		return
 	}
 
-	// Begin transaction
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -52,7 +48,6 @@ func CreateGroupRoom(c *gin.Context) {
 		}
 	}()
 
-	// Create group room
 	room := chat.ChatRoom{
 		ID:        uuid.New().String(),
 		Type:      "group",
@@ -66,7 +61,6 @@ func CreateGroupRoom(c *gin.Context) {
 		return
 	}
 
-	// Add creator as admin
 	now := time.Now()
 	roomUsers := []chat.ChatRoomUser{
 		{
@@ -78,9 +72,7 @@ func CreateGroupRoom(c *gin.Context) {
 		},
 	}
 
-	// Add members
 	for _, memberID := range req.MemberIDs {
-		// Skip if member is the creator
 		if memberID == currentUserID {
 			continue
 		}
@@ -100,13 +92,11 @@ func CreateGroupRoom(c *gin.Context) {
 		return
 	}
 
-	// Commit transaction
 	if err := tx.Commit().Error; err != nil {
 		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal menyimpan data grup. Silakan hubungi administrator", err)
 		return
 	}
 
-	// Load room with members
 	if err := db.Preload("ChatRoom").Where("chat_room_id = ?", room.ID).Find(&roomUsers).Error; err != nil {
 		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal memuat data grup", err)
 		return
@@ -123,7 +113,6 @@ type AddMemberRequest struct {
 	MemberIDs  []uint64 `json:"member_ids" binding:"required,min=1"`
 }
 
-// validateGroupAdmin - Validasi apakah user adalah admin dari grup
 func validateGroupAdmin(db *gorm.DB, roomID string, userID uint64) (*chat.ChatRoom, error) {
 	var room chat.ChatRoom
 	if err := db.Where("id = ? AND type = ?", roomID, "group").First(&room).Error; err != nil {
@@ -138,7 +127,6 @@ func validateGroupAdmin(db *gorm.DB, roomID string, userID uint64) (*chat.ChatRo
 	return &room, nil
 }
 
-// addNewMembers - Menambahkan member baru ke grup
 func addNewMembers(tx *gorm.DB, roomID string, memberIDs []uint64) ([]chat.ChatRoomUser, error) {
 	var addedMembers []chat.ChatRoomUser
 	now := time.Now()
@@ -171,7 +159,6 @@ func addNewMembers(tx *gorm.DB, roomID string, memberIDs []uint64) ([]chat.ChatR
 	return addedMembers, nil
 }
 
-// AddMemberToGroup - Menambahkan anggota ke grup chat
 func AddMemberToGroup(c *gin.Context) {
 	var req AddMemberRequest
 
@@ -182,7 +169,6 @@ func AddMemberToGroup(c *gin.Context) {
 		return
 	}
 
-	// Get current user ID
 	userIDStr := c.GetString("user_id")
 	currentUserID, err := strconv.ParseUint(userIDStr, 10, 64)
 	if err != nil {
@@ -190,7 +176,6 @@ func AddMemberToGroup(c *gin.Context) {
 		return
 	}
 
-	// Validasi admin
 	_, err = validateGroupAdmin(db, req.ChatRoomID, currentUserID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -201,7 +186,6 @@ func AddMemberToGroup(c *gin.Context) {
 		return
 	}
 
-	// Begin transaction
 	tx := db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -209,7 +193,6 @@ func AddMemberToGroup(c *gin.Context) {
 		}
 	}()
 
-	// Tambahkan member baru
 	addedMembers, err := addNewMembers(tx, req.ChatRoomID, req.MemberIDs)
 	if err != nil {
 		tx.Rollback()
@@ -217,7 +200,6 @@ func AddMemberToGroup(c *gin.Context) {
 		return
 	}
 
-	// Commit transaction
 	if err := tx.Commit().Error; err != nil {
 		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal menyimpan data anggota. Silakan hubungi administrator", err)
 		return
@@ -230,7 +212,6 @@ func AddMemberToGroup(c *gin.Context) {
 		return
 	}
 
-	// Load members with user data
 	var membersWithUser []chat.ChatRoomUser
 	if err := db.Preload("User").Where("id IN ?", getMemberIDs(addedMembers)).Find(&membersWithUser).Error; err != nil {
 		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal memuat data anggota", err)
@@ -243,7 +224,6 @@ func AddMemberToGroup(c *gin.Context) {
 	})
 }
 
-// Helper function to get member IDs
 func getMemberIDs(members []chat.ChatRoomUser) []string {
 	ids := make([]string, len(members))
 	for i, member := range members {
@@ -257,7 +237,6 @@ type SendGroupMessageRequest struct {
 	Message    string `json:"message" binding:"required"`
 }
 
-// validateGroupMembership - Validasi apakah user adalah member dari grup
 func validateGroupMembership(db *gorm.DB, roomID string, userID uint64) (*chat.ChatRoom, error) {
 	var room chat.ChatRoom
 	if err := db.Where("id = ? AND type = ?", roomID, "group").First(&room).Error; err != nil {
@@ -272,7 +251,6 @@ func validateGroupMembership(db *gorm.DB, roomID string, userID uint64) (*chat.C
 	return &room, nil
 }
 
-// createGroupMessage - Membuat dan menyimpan pesan grup
 func createGroupMessage(db *gorm.DB, roomID string, senderID uint64, messageText string) (*chat.ChatMessage, error) {
 	message := chat.ChatMessage{
 		ID:         uuid.New().String(),
@@ -294,7 +272,6 @@ func createGroupMessage(db *gorm.DB, roomID string, senderID uint64, messageText
 	return &message, nil
 }
 
-// SendGroupMessage - Mengirim pesan ke grup chat
 func SendGroupMessage(c *gin.Context) {
 	var req SendGroupMessageRequest
 
@@ -305,7 +282,6 @@ func SendGroupMessage(c *gin.Context) {
 		return
 	}
 
-	// Get current user ID
 	userIDStr := c.GetString("user_id")
 	currentUserID, err := strconv.ParseUint(userIDStr, 10, 64)
 	if err != nil {
@@ -313,7 +289,6 @@ func SendGroupMessage(c *gin.Context) {
 		return
 	}
 
-	// Validasi membership
 	room, err := validateGroupMembership(db, req.ChatRoomID, currentUserID)
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -324,20 +299,17 @@ func SendGroupMessage(c *gin.Context) {
 		return
 	}
 
-	// Buat dan simpan pesan
 	message, err := createGroupMessage(db, room.ID, currentUserID, req.Message)
 	if err != nil {
 		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mengirim pesan", err)
 		return
 	}
 
-	// Catat delivered untuk semua member room selain pengirim
 	if err := createReceiptsForRoom(db, room.ID, message.ID, currentUserID); err != nil {
 		helpers.ErrorResponse(c, http.StatusInternalServerError, "Gagal mencatat status delivered", err)
 		return
 	}
 
-	// Update last message ID
 	db.Model(&room).Update("last_message_id", message.ID)
 
 	helpers.SuccessResponse(c, http.StatusOK, "Pesan berhasil dikirim", gin.H{
