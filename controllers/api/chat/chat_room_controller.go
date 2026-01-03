@@ -82,6 +82,11 @@ func StorePrivateMessage(c *gin.Context) {
 		return
 	}
 
+	if req.TargetUserID == currentUserID {
+		helpers.ErrorResponse(c, http.StatusBadRequest, "Tidak dapat mengirim pesan ke diri sendiri", nil)
+		return
+	}
+
 	var existingRoom chat.ChatRoom
 
 	subQuery := db.Model(&chat.ChatRoomUser{}).
