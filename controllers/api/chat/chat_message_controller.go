@@ -54,6 +54,15 @@ func markMessagesAsRead(db *gorm.DB, roomID string, userID uint64) {
 	fmt.Println("\n=== DEBUG MARK AS READ ===")
 	fmt.Printf("Room ID: %s, Reader User ID: %d\n", roomID, userID)
 
+	// Get room info untuk cek tipe
+	var room chat.ChatRoom
+	if err := db.First(&room, "id = ?", roomID).Error; err != nil {
+		fmt.Printf("Error getting room: %v\n", err)
+		fmt.Println("=== END DEBUG ===")
+		return
+	}
+	fmt.Printf("Room Type: %s\n", room.Type)
+
 	// Ambil semua message ID di room ini yang bukan dikirim oleh user ini
 	var messageIDs []string
 	db.Model(&chat.ChatMessage{}).
@@ -118,15 +127,25 @@ func markMessagesAsRead(db *gorm.DB, roomID string, userID uint64) {
 			return
 		}
 
-		fmt.Printf("Updating %d messages to 'read' status\n", len(unreadMessageIDs))
-
-		// Update status message menjadi "read"
-		if err := tx.Model(&chat.ChatMessage{}).
-			Where("id IN ?", unreadMessageIDs).
-			Update("status", "read").Error; err != nil {
-			fmt.Printf("Error updating status: %v\n", err)
-			tx.Rollback()
-			return
+		// Update status message berdasarkan tipe room
+		if room.Type == "private" {
+			// Untuk private chat, langsung update ke read
+			fmt.Printf("Private chat: updating %d messages to 'read' status\n", len(unreadMessageIDs))
+			if err := tx.Model(&chat.ChatMessage{}).
+				Where("id IN ?", unreadMessageIDs).
+				Update("status", "read").Error; err != nil {
+				fmt.Printf("Error updating status: %v\n", err)
+				tx.Rollback()
+				return
+			}
+		} else if room.Type == "group" {
+			// Untuk group chat, cek apakah semua member sudah baca
+			fmt.Println("Group chat: checking if all members read each message")
+			for _, msgID := range unreadMessageIDs {
+				if err := updateGroupMessageReadStatus(tx, msgID); err != nil {
+					fmt.Printf("Error updating group message status: %v\n", err)
+				}
+			}
 		}
 
 		fmt.Println("✓ Successfully marked messages as read")
